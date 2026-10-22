@@ -18,6 +18,9 @@ type Settings = {
   remove_fillers: boolean;
   restore_clipboard: boolean;
   vocabulary: string[];
+  ai_cleanup: boolean;
+  claude_model: string;
+  anthropic_workspace_id: string;
 };
 
 const ACCESSIBILITY_URL =
@@ -58,6 +61,9 @@ export default function App() {
   const [trusted, setTrusted] = useState(true);
   const [lastText, setLastText] = useState("");
   const [saveMsg, setSaveMsg] = useState("");
+  const [hasKey, setHasKey] = useState(false);
+  const [keyInput, setKeyInput] = useState("");
+  const [keyMsg, setKeyMsg] = useState("");
 
   useEffect(() => {
     invoke<Status>("get_status").then(setStatus);
@@ -66,6 +72,7 @@ export default function App() {
       setVocabText(s.vocabulary.join("\n"));
     });
     invoke<string[]>("list_microphones").then(setMics);
+    invoke<boolean>("has_api_key").then(setHasKey);
     const unlisten = listen<Status>("status", (e) => {
       setStatus(e.payload);
       if (e.payload.state === "done" && e.payload.text) setLastText(e.payload.text);
@@ -99,13 +106,32 @@ export default function App() {
     setTimeout(() => setSaveMsg(""), 4000);
   }
 
+  /** Saves the key to the macOS Keychain; an empty key removes it. */
+  async function saveKey(key: string) {
+    try {
+      await invoke("set_api_key", { key });
+      const saved = await invoke<boolean>("has_api_key");
+      setHasKey(saved);
+      setKeyInput("");
+      setKeyMsg(saved ? "Key saved to Keychain" : "Key removed");
+    } catch (e) {
+      setKeyMsg(String(e));
+    }
+    setTimeout(() => setKeyMsg(""), 4000);
+  }
+
   const shortcut = settings?.shortcut ?? "Alt+Space";
+  const online = settings?.ai_cleanup ?? false;
 
   return (
     <main className="app">
       <header>
         <h1>Parla</h1>
-        <p className="tagline">Free, private dictation. Everything stays on this Mac.</p>
+        <p className="tagline">
+          {online
+            ? "Free dictation. Speech stays on this Mac; AI cleanup sends the text to Anthropic."
+            : "Free, private dictation. Everything stays on this Mac."}
+        </p>
       </header>
 
       <section className={`status status-${status.state}`} aria-live="polite">
@@ -174,6 +200,67 @@ export default function App() {
             />
             Keep my clipboard unchanged
           </label>
+
+          <label className="check">
+            <input
+              type="checkbox"
+              checked={settings.ai_cleanup}
+              onChange={(e) => setSettings({ ...settings, ai_cleanup: e.target.checked })}
+            />
+            AI cleanup with Claude (sends the text, never audio, to Anthropic)
+          </label>
+
+          {settings.ai_cleanup && (
+            <div className="ai-settings">
+              <p className="hint">
+                Fixes self-corrections ("Tuesday, no wait, Wednesday"), formats spoken lists and
+                tidies punctuation. If Claude can't be reached, Parla pastes the offline text.
+              </p>
+
+              <label>
+                Anthropic API key {hasKey ? "(saved in Keychain)" : "(not set)"}
+                <div className="key-row">
+                  <input
+                    type="password"
+                    value={keyInput}
+                    onChange={(e) => setKeyInput(e.target.value)}
+                    placeholder={hasKey ? "Enter a new key to replace it" : "sk-ant-…"}
+                    autoComplete="off"
+                    spellCheck={false}
+                  />
+                  <button onClick={() => saveKey(keyInput)} disabled={!keyInput.trim()}>
+                    Save key
+                  </button>
+                  {hasKey && (
+                    <button className="secondary" onClick={() => saveKey("")}>
+                      Remove
+                    </button>
+                  )}
+                </div>
+                <span className="save-msg">{keyMsg}</span>
+              </label>
+
+              <label>
+                Claude model
+                <input
+                  value={settings.claude_model}
+                  onChange={(e) => setSettings({ ...settings, claude_model: e.target.value })}
+                  placeholder="claude-haiku-5-5"
+                  spellCheck={false}
+                />
+              </label>
+
+              <label>
+                Workspace ID (only for organization-wide keys)
+                <input
+                  value={settings.anthropic_workspace_id}
+                  onChange={(e) => setSettings({ ...settings, anthropic_workspace_id: e.target.value })}
+                  placeholder="Optional"
+                  spellCheck={false}
+                />
+              </label>
+            </div>
+          )}
 
           <label>
             Custom words (one per line)
