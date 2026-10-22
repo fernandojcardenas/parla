@@ -1,6 +1,7 @@
 mod audio;
 #[macro_use]
 mod log;
+mod ai_cleanup;
 mod cleanup;
 mod output;
 mod settings;
@@ -108,8 +109,24 @@ fn on_release(app: &AppHandle) {
         };
         match raw {
             Ok(raw) => {
-                let text = cleanup::clean(&raw, settings.remove_fillers);
+                let mut text = cleanup::clean(&raw, settings.remove_fillers);
                 plog!("transcribed in {:?}: {text:?}", started.elapsed());
+                if settings.ai_cleanup && !text.is_empty() {
+                    let ai_started = Instant::now();
+                    let api_key = ai_cleanup::load_api_key();
+                    let target_app = ai_cleanup::frontmost_app();
+                    text = ai_cleanup::refine(
+                        &text,
+                        &ai_cleanup::Options {
+                            api_key: api_key.as_deref(),
+                            model: &settings.claude_model,
+                            workspace_id: &settings.anthropic_workspace_id,
+                            vocabulary: &settings.vocabulary,
+                            target_app: target_app.as_deref(),
+                        },
+                    );
+                    plog!("AI cleanup in {:?}: {text:?}", ai_started.elapsed());
+                }
                 if !text.is_empty() {
                     let trusted = output::can_control_keyboard();
                     plog!("pasting (accessibility granted: {trusted})");
@@ -237,6 +254,18 @@ fn save_settings(app: AppHandle, state: State<AppState>, settings: Settings) -> 
     Ok(())
 }
 
+/// Whether an Anthropic API key is saved. The key itself never leaves Rust.
+#[tauri::command]
+fn has_api_key() -> bool {
+    ai_cleanup::load_api_key().is_some()
+}
+
+/// Saves the Anthropic API key to the Keychain, or removes it when empty.
+#[tauri::command]
+fn set_api_key(key: String) -> Result<(), String> {
+    ai_cleanup::store_api_key(&key)
+}
+
 #[tauri::command]
 fn list_microphones() -> Vec<String> {
     audio::input_device_names()
@@ -290,7 +319,9 @@ pub fn run() {
             get_settings,
             save_settings,
             list_microphones,
-            has_accessibility
+            has_accessibility,
+            has_api_key,
+            set_api_key
         ])
         .build(tauri::generate_context!())
         .expect("error while starting Parla")

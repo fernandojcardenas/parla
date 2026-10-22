@@ -33,6 +33,12 @@ jobs:
       - name: Build frontend
         run: npm run build
 
+      - name: Placeholder for the speech model
+        # The model (~570 MB) is downloaded at build time and kept out of git.
+        # Tauri's bundle config needs at least one file in this folder to compile;
+        # the end-to-end test skips itself when the real model is absent.
+        run: mkdir -p src-tauri/resources/models && touch src-tauri/resources/models/placeholder.txt
+
       - name: Run tests
         working-directory: src-tauri
         run: cargo test --release

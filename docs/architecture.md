@@ -15,7 +15,10 @@ and a small React window shows status and settings.
    off the shortcut thread. It skips silence, pads very short clips, boosts
    quiet audio, and passes the custom vocabulary as Whisper's initial prompt.
 5. **Clean up** — `cleanup.rs` removes filler words and non-speech noise tags
-   with simple rules (no second model).
+   with simple rules (no second model). If the optional AI cleanup setting is
+   on, `ai_cleanup.rs` then sends that text (never audio) to the Anthropic
+   Messages API with a 10-second timeout; on any failure (no key, network,
+   HTTP error, refusal, empty reply) the rule-based text is used.
 6. **Output** — `output.rs` copies the text to the clipboard, presses ⌘V on the
    main thread via `enigo`, and restores the previous clipboard. If macOS has
    not granted Accessibility, it leaves the text on the clipboard and reports
@@ -29,6 +32,7 @@ and a small React window shows status and settings.
 | `audio.rs` | Microphone capture thread and resampling |
 | `transcribe.rs` | whisper.cpp model loading and transcription |
 | `cleanup.rs` | Rule-based filler and noise removal |
+| `ai_cleanup.rs` | Optional Claude cleanup, Keychain API key, frontmost app name |
 | `output.rs` | Clipboard paste, clipboard restore, Accessibility check |
 | `settings.rs` | Load and save user settings as JSON |
 | `log.rs` | Log to the terminal and `~/Library/Logs/Parla/parla.log` |

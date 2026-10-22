@@ -3,8 +3,9 @@
 Parla is a free, local, type-anywhere voice dictation app for macOS. Hold a
 shortcut, speak, and your words are transcribed on-device and pasted into
 whatever app has focus — an editor, a browser, a chat box, anywhere you can
-type. Nothing is sent to the cloud: there is no account, no subscription, and
-the app makes no network calls once it is built.
+type. By default nothing is sent to the cloud: there is no account, no
+subscription, and the app makes no network calls once it is built. The one
+exception is the optional AI cleanup, which is off unless you turn it on.
 
 ![The Parla window](docs/screenshots/parla.png)
 
@@ -20,12 +21,19 @@ the app makes no network calls once it is built.
   them.
 - Rule-based cleanup that removes filler words (um, uh) with no second AI model
   involved.
+- Optional AI cleanup with Claude (off by default). When you turn it on and add
+  your own Anthropic API key, the transcript text is sent to Claude to apply
+  self-corrections ("Tuesday, no wait, Wednesday" becomes "Wednesday"), format
+  spoken lists and fix punctuation. The key is stored in the macOS Keychain. If
+  Claude cannot be reached or declines, Parla pastes the offline text instead.
 - Clipboard-safe pasting: Parla restores whatever you had copied after it types,
   so dictation never clobbers your clipboard.
 - An honest Accessibility check: if macOS has not granted permission yet, Parla
   leaves the text on the clipboard and explains exactly how to enable pasting.
-- Settings for the shortcut, microphone, filler removal, clipboard behaviour and
-  vocabulary, saved as JSON in the app's config folder.
+- Settings for the shortcut, microphone, filler removal, clipboard behaviour,
+  vocabulary and AI cleanup (model and optional workspace ID for
+  organization-wide keys), saved as JSON in the app's config folder. The API
+  key is never written to that file.
 
 ## Run locally
 
@@ -64,6 +72,7 @@ On first launch, grant **Microphone** and **Accessibility** when asked.
 | Speech-to-text | whisper-rs (whisper.cpp) + Metal | On-device transcription |
 | Text output | enigo + arboard | Paste at the cursor, then restore the clipboard |
 | Cleanup | Rust, rule-based | Filler and noise removal — no AI model |
+| AI cleanup (optional) | reqwest + Anthropic Messages API | Off by default; text-only polish by Claude |
 
 The speech model is downloaded at build time and bundled into the app. See
 [docs/architecture.md](docs/architecture.md) for how the pieces fit together.
@@ -86,10 +95,19 @@ This repository uses Git tags for meaningful milestones. The first release is
 
 ## Privacy and safety
 
-Parla runs entirely on your Mac. Audio is captured, transcribed and cleaned up
-locally; the only time the project touches the network is the one-time model
-download at build time. There is no account and no telemetry. Do not add
-secrets, API keys or personal data to the repository.
+Parla runs entirely on your Mac unless you turn on AI cleanup. Audio is always
+captured and transcribed locally, and by default the text is cleaned up locally
+too; apart from the one-time model download at build time, the app makes no
+network calls. There is no account and no telemetry.
+
+AI cleanup is off by default. If you turn it on, each dictation's transcript
+text (never audio) is sent over HTTPS to Anthropic's API, along with your
+custom words and the name of the app you are typing into, using your own API
+key. Anthropic's data policies apply to that text. Your key is kept in the
+macOS Keychain, not in the settings file. Turn the setting off and Parla is
+fully offline again.
+
+Do not add secrets, API keys or personal data to the repository.
 
 ## Credits
 

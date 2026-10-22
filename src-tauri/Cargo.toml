@@ -1,6 +1,6 @@
 [package]
 name = "parla"
-version = "0.1.0"
+version = "1.0.0"
 description = "Parla - a free, local, type-anywhere voice dictation app"
 authors = ["Fernando Cardenas"]
 license = "MIT"
@@ -29,6 +29,7 @@ enigo = "0.6.1"
 tauri-plugin-global-shortcut = "2.4.1"
 anyhow = "1.0.104"
 arboard = "3.7.0"
+reqwest = { version = "0.13.5", features = ["blocking", "json"] }
 
 
 # Read the optimization guideline for more details: https://tauri.app/concept/size/#cargo-configuration
@@ -41,3 +42,6 @@ strip = true
 
 [dev-dependencies]
 hound = "3.5.1"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+security-framework = "3.7.0"

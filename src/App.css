@@ -88,3 +88,10 @@ button:hover { filter: brightness(1.08); }
 
 .save-row { display: flex; align-items: center; gap: 10px; }
 .save-msg { color: var(--muted); }
+
+.ai-settings { display: flex; flex-direction: column; gap: 12px; padding-left: 24px; }
+.hint { margin: 0; color: var(--muted); font-size: 13px; }
+.key-row { display: flex; gap: 8px; }
+.key-row input { flex: 1; min-width: 0; }
+button.secondary { color: var(--text); background: transparent; border: 1px solid var(--border); }
+button:disabled { opacity: 0.5; cursor: default; filter: none; }
