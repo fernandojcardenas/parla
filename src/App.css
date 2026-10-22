@@ -1,116 +1,90 @@
-.logo.vite:hover {
-  filter: drop-shadow(0 0 2em #747bff);
-}
-
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafb);
-}
 :root {
-  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 400;
-
-  color: #0f0f0f;
-  background-color: #f6f6f6;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
-}
-
-.container {
-  margin: 0;
-  padding-top: 10vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  text-align: center;
-}
-
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: 0.75s;
-}
-
-.logo.tauri:hover {
-  filter: drop-shadow(0 0 2em #24c8db);
-}
-
-.row {
-  display: flex;
-  justify-content: center;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-
-a:hover {
-  color: #535bf2;
-}
-
-h1 {
-  text-align: center;
-}
-
-input,
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  color: #0f0f0f;
-  background-color: #ffffff;
-  transition: border-color 0.25s;
-  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
-}
-
-button {
-  cursor: pointer;
-}
-
-button:hover {
-  border-color: #396cd8;
-}
-button:active {
-  border-color: #396cd8;
-  background-color: #e8e8e8;
-}
-
-input,
-button {
-  outline: none;
-}
-
-#greet-input {
-  margin-right: 5px;
+  --bg: #f7f7f8;
+  --card: #ffffff;
+  --text: #1c1c1e;
+  --muted: #6e6e73;
+  --border: #e3e3e6;
+  --accent: #3a6df0;
+  --rec: #e5484d;
+  --ok: #2f9e5b;
+  --warn-bg: #fff6e0;
+  --warn-border: #f0d48a;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    color: #f6f6f6;
-    background-color: #2f2f2f;
-  }
-
-  a:hover {
-    color: #24c8db;
-  }
-
-  input,
-  button {
-    color: #ffffff;
-    background-color: #0f0f0f98;
-  }
-  button:active {
-    background-color: #0f0f0f69;
+    --bg: #1c1c1e;
+    --card: #2c2c2e;
+    --text: #f2f2f7;
+    --muted: #a1a1a6;
+    --border: #3a3a3c;
+    --accent: #6b8ff5;
+    --warn-bg: #3a3320;
+    --warn-border: #6b5a2a;
   }
 }
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); }
+
+.app { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+
+header h1 { margin: 0; font-size: 22px; }
+.tagline { margin: 4px 0 0; color: var(--muted); }
+
+section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+}
+
+h2 { margin: 0 0 10px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+
+.status { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 500; }
+.dot { width: 10px; height: 10px; border-radius: 50%; background: var(--muted); flex: none; }
+.status-idle .dot, .status-done .dot { background: var(--ok); }
+.status-recording .dot { background: var(--rec); animation: pulse 1s infinite; }
+.status-transcribing .dot, .status-loading .dot { background: var(--accent); animation: pulse 1s infinite; }
+.status-error { color: var(--rec); }
+.status-error .dot { background: var(--rec); }
+
+@keyframes pulse { 50% { opacity: 0.3; } }
+
+.notice { background: var(--warn-bg); border-color: var(--warn-border); }
+.notice p { margin: 0 0 10px; }
+
+.last p { margin: 0; white-space: pre-wrap; user-select: text; }
+
+.settings { display: flex; flex-direction: column; gap: 12px; }
+.settings label { display: flex; flex-direction: column; gap: 5px; font-weight: 500; }
+.settings label.check { flex-direction: row; align-items: center; gap: 8px; font-weight: 400; }
+
+input:not([type="checkbox"]), select, textarea {
+  font: inherit;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 9px;
+}
+textarea { resize: vertical; }
+
+button {
+  font: inherit;
+  font-weight: 500;
+  color: #fff;
+  background: var(--accent);
+  border: none;
+  border-radius: 6px;
+  padding: 7px 14px;
+  cursor: pointer;
+}
+button:hover { filter: brightness(1.08); }
+
+.save-row { display: flex; align-items: center; gap: 10px; }
+.save-msg { color: var(--muted); }
