@@ -1,6 +1,6 @@
 [package]
 name = "parla"
-version = "0.1.0"
+version = "1.0.0"
 description = "Parla - a free, local, type-anywhere voice dictation app"
 authors = ["Fernando Cardenas"]
 license = "MIT"
